@@ -182,7 +182,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
   //return res
   return res.json(new ApiResponse(200, "Password Changed Successfully"));
 });
-
+//update account details
 const updateAccountDetails = asyncHandler(async (req, res) => {
   const { email, fullName } = req.body;
   //fields that needs to update
@@ -214,11 +214,29 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     new ApiResponse(200, user, "Account detials updated successfully")
   );
 });
+//remove avatar
+const removeAvatar = asyncHandler(async (req, res) => {
+  //get the current user and remove avatar
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $unset: {
+        avatar: 1,
+      },
+    },
+    {
+      new: true,
+    }
+  ).select("-password -refreshToken");
+  //return res
+  return res.json(new ApiResponse(200, user, "Avatar removed sucessfully"));
+});
 
 export {
   changeCurrentPassword,
   loginUser,
   logoutUser,
   registerUser,
+  removeAvatar,
   updateAccountDetails,
 };

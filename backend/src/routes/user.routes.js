@@ -4,6 +4,7 @@ import {
   loginUser,
   logoutUser,
   registerUser,
+  removeAvatar,
   updateAccountDetails,
 } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -23,5 +24,7 @@ router.route("/change-current-password").post(verifyJWT, changeCurrentPassword);
 router
   .route("/update-account-details")
   .post(verifyJWT, upload.single("avatar"), updateAccountDetails);
+//remove avatar
+router.route("/remove-avatar").post(verifyJWT, removeAvatar);
 
 export default router;
