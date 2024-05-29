@@ -183,4 +183,42 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
   return res.json(new ApiResponse(200, "Password Changed Successfully"));
 });
 
-export { changeCurrentPassword, loginUser, logoutUser, registerUser };
+const updateAccountDetails = asyncHandler(async (req, res) => {
+  const { email, fullName } = req.body;
+  //fields that needs to update
+  const updateFields = {
+    email,
+    fullName,
+  };
+
+  //check for avatar and upload
+  if (req.file) {
+    const avatarLocalPath = req.file.path;
+    const avatar = await uploadFilesOnCloudinary(avatarLocalPath);
+    updateFields.avatar = avatar?.url || avatar;
+  }
+
+  //get the user and update fields
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+
+    {
+      $set: updateFields,
+    },
+    {
+      new: true,
+    }
+  ).select("-password -refreshToken");
+  //retunr res
+  return res.json(
+    new ApiResponse(200, user, "Account detials updated successfully")
+  );
+});
+
+export {
+  changeCurrentPassword,
+  loginUser,
+  logoutUser,
+  registerUser,
+  updateAccountDetails,
+};
