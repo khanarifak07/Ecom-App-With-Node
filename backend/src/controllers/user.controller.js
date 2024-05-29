@@ -126,4 +126,61 @@ const loginUser = asyncHandler(async (req, res) => {
     );
 });
 
-export { loginUser, registerUser };
+//logout user
+const logoutUser = asyncHandler(async (req, res) => {
+  //only logged In user can logout so we need to verify the user with access token from cookies
+  await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $unset: {
+        refreshToken: 1, //unset removes the given field
+      },
+    },
+    {
+      new: true, // new return the updated value
+    }
+  );
+  //set the options and to clear the cookies
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+  //return res with clearCookie
+  return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, {}, "User logged out successfully"));
+});
+
+//change current password
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword, confirmPassword } = req.body;
+  //check for confirm password
+  if (newPassword != confirmPassword) {
+    throw new ApiError(400, "Confirm Password Mismatch");
+  }
+
+  //get the current user
+  const user = await User.findById(req.user?._id);
+  if (!user) {
+    throw new ApiError(401, "User not found");
+  }
+
+  //check for old Password
+  const isPassMatch = await user.isPasswordMatch(oldPassword);
+  console.log("IsPassMatch", isPassMatch);
+
+  if (!isPassMatch) {
+    throw new ApiError(400, "Old Password is incorrect");
+  }
+  //if old password match then update password
+  user.password = newPassword;
+  //save the updated user to databse
+  await user.save({ validateBeforeSave: false });
+
+  //return res
+  return res.json(new ApiResponse(200, "Password Changed Successfully"));
+});
+
+export { changeCurrentPassword, loginUser, logoutUser, registerUser };
