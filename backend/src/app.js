@@ -15,4 +15,10 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 //asset configuration for files, pdfs, image, etc
 app.use(express.static("public"));
 
+//import router
+import userRouter from "./routes/user.routes.js";
+
+//user router
+app.use("/api/v1/users", userRouter);
+
 export { app };
